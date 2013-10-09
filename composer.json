@@ -1,0 +1,16 @@
+{
+    "name": "straube/deploy",
+    "require": {
+        "symfony/console": "2.*",
+        "symfony/finder": "2.*",
+        "klaussilveira/gitter": "0.2.*"
+    },
+    "require-dev": {
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-0": {
+            "Straube": "src/"
+        }
+    }
+}

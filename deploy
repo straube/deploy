@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+
+set_time_limit(0);
+
+require_once __DIR__.'/vendor/autoload.php';
+
+use Symfony\Component\Console\Application;
+
+use Straube\Command\CommandMapper;
+
+$application = new Application('Deploy', '0.2');
+
+$mapper = new CommandMapper(__DIR__.'/src/', 'Straube\\Deploy\\Command');
+$mapper->registerCommands($application);
+
+$application->run();
