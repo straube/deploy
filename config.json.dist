@@ -1,0 +1,22 @@
+{
+    "deploy" : {
+        "repo" : {
+            "url" : "ssh://git@github.com:straube/deploy.git"
+        },
+        "servers" : {
+            "production" : {
+                "type" : "ssh",
+                "branch" : "master",
+                "host" : "example.com",
+                "user" : "deploy",
+                "path" : "/var/www/",
+                "pre_deploy_commands" : [
+                    "phpunit -c ."
+                ],
+                "post_deploy_commands" : [
+                    "rm -rf cache/*"
+                ]
+            }
+        }
+    }
+}

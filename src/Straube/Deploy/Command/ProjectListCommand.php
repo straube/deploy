@@ -3,19 +3,18 @@
 namespace Straube\Deploy\Command;
 
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use Straube\Deploy\Model\Config;
 
 /**
- * Server list command.
+ * Project list command.
  *
  * @author Gustavo Straube <gustavo@codekings.com.br>
  * @since 0.2
  */
-class ServerListCommand extends Command
+class ProjectListCommand extends Command
 {
 
     /**
@@ -24,9 +23,8 @@ class ServerListCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('server:list')
-            ->setDescription('Server list command.')
-            ->addArgument('project', InputArgument::REQUIRED, 'Project name.');
+            ->setName('project:list')
+            ->setDescription('Project list command.');
     }
 
     /**
@@ -34,20 +32,12 @@ class ServerListCommand extends Command
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $projectName = $input->getArgument('project');
-
         $output->writeln($this->getApplication()->getLongVersion()."\n");
-        $output->writeln(sprintf("<comment>Available servers under '%s' project:</comment>", $projectName));
-        
+        $output->writeln('<comment>Available projects:</comment>');
+
         $config = new Config();
-        $project = $config->getProject($projectName);
-        
-        if (null === $project) {
-            throw new \Exception(sprintf("Project '%s' not found.", $projectName));
-        }
-        
-        foreach ($project->getServers() as $server) {
-            $output->writeln(sprintf("\t- <info>%s</info>", $server->getName()));
+        foreach ($config->getAvailableProjects() as $project) {
+            $output->writeln(sprintf("\t- <info>%s</info>", $project));
         }
 
         return 0;
