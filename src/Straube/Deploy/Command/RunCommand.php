@@ -10,6 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Gitter\Client;
 
 use Straube\Deploy\Model\Config;
+use Straube\Deploy\Model\Log;
 use Straube\Deploy\Model\LogQuery;
 use Straube\Deploy\Server\ConnectionFactory;
 
@@ -154,6 +155,16 @@ class RunCommand extends Command
                 $output->writeln(sprintf("%s", ($ok ? '<info>OK</info>' : '<error>Error</error>')));
             }
         }
+
+        $user = posix_getpwuid(posix_geteuid());
+        $log = new Log(array(
+            'project' => $project->getName(),
+            'server' => $server->getName(),
+            'from' => $from,
+            'to' => $to,
+            'user' => $user['name'],
+        ));
+        $log->save();
 
         return 0;
     }

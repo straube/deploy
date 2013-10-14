@@ -27,7 +27,7 @@ class LogCommand extends Command
             ->setName('log')
             ->addArgument('project', InputArgument::REQUIRED, 'Project name.')
             ->addArgument('server', InputArgument::REQUIRED, 'Server name.')
-            ->addArgument('count', InputArgument::OPTIONAL, 'Number of log records to display (10 records will be displayed if ommited).');
+            ->addArgument('count', InputArgument::OPTIONAL, 'Number of log records to display (10 records will be displayed if ommited).', 10);
     }
 
     /**
@@ -47,10 +47,8 @@ class LogCommand extends Command
         if (empty($logs)) {
             $output->writeln("\tNo records found.");
         } else {
-            $recordCount = 1;
             foreach ($logs as $log) {
-                $output->writeln(sprintf("\n\t- Record %d\n\t\t   User: <info>%s</info>\n\t\tCommits: <info>%s</info> --> <info>%s</info>\n\t\t   Date: <info>%s</info>", $recordCount, $log->getUser(), $log->getFrom(), $log->getTo(), $log->getDate()));
-                $recordCount++;
+                $output->writeln(sprintf("\n\t   User: <info>%s</info>\n\tCommits: <info>%s</info> --> <info>%s</info>\n\t   Date: <info>%s</info>", $log->getUser(), $log->getFrom(), $log->getTo(), $log->getDate()));
             }
         }
 

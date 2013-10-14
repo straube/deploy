@@ -54,6 +54,9 @@ class Log
                 }
             }
         }
+        if (empty($this->date)) {
+            $this->date = date('Y-m-d H:i:s');
+        }
     }
 
     /**
@@ -108,6 +111,15 @@ class Log
     public function getDate()
     {
         return $this->date;
+    }
+
+    /**
+     *
+     * @return boolean
+     */
+    public function save()
+    {
+        return LogQuery::addLog($this);
     }
 
 }

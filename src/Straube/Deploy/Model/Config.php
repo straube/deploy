@@ -25,14 +25,26 @@ class Config
 
     /**
      *
+     * @var array
+     */
+    private $database;
+
+    /**
+     *
      */
     public function __construct()
     {
         if (!isset(self::$config)) {
             $this->loadConfig();
         }
+        if (!empty(self::$config['database'])) {
+            $this->database = self::$config['database'];
+        }
         $this->projects = array();
         foreach (self::$config as $projectName => $projectConfig) {
+            if ('database' == $projectName) {
+                continue;
+            }
             $this->projects[$projectName] = new Project($projectName, $projectConfig);
         }
     }
@@ -69,6 +81,15 @@ class Config
     public function hasProject($projectName)
     {
         return isset($this->projects[$projectName]);
+    }
+
+    /**
+     * 
+     * @return array
+     */
+    public function getDatabase()
+    {
+        return $this->database;
     }
 
     /**

@@ -1,4 +1,10 @@
 {
+    "database" : {
+        "host" : "mysql.example.com",
+        "user" : "root",
+        "password" : null,
+        "name" : "deploy"
+    },
     "deploy" : {
         "repo" : {
             "url" : "ssh://git@github.com:straube/deploy.git"
