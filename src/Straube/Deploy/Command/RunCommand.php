@@ -124,7 +124,7 @@ class RunCommand extends Command
         if (!empty($preDeployCommads)) {
             $output->writeln("\n<comment>Running pre deploy commands:</comment>");
             foreach ($preDeployCommads as $command) {
-                $output->write(sprintf("\t - %s ... ", $command));
+                $output->write(sprintf("\t- %s ... ", $command));
                 $ok = $connection->runCommand($command, $cachePath);
                 $output->writeln(sprintf("%s", ($ok ? '<info>OK</info>' : '<error>Error</error>')));
             }
@@ -150,7 +150,7 @@ class RunCommand extends Command
         if (!empty($postDeployCommands)) {
             $output->writeln("\n<comment>Running post deploy commands:</comment>");
             foreach ($postDeployCommands as $command) {
-                $output->write(sprintf("\t - %s ... ", $command));
+                $output->write(sprintf("\t- %s ... ", $command));
                 $ok = $connection->runCommand($command, $cachePath);
                 $output->writeln(sprintf("%s", ($ok ? '<info>OK</info>' : '<error>Error</error>')));
             }
