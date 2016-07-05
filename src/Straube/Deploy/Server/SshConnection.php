@@ -49,6 +49,11 @@ class SshConnection extends AbstractConnection
      */
     private function doRunCommand($command, $cwd = null)
     {
+        $server = $this->getServer();
+        if ($server->getPassword() !== null) {
+            $command = sprintf("sshpass -p '%s' %s", $server->getPassword(), $command);
+        }
+        
         $process = new Process($command, $cwd);
         $process->setTimeout(60);
         $process->run();

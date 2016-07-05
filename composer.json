@@ -1,6 +1,7 @@
 {
     "name": "straube/deploy",
     "require": {
+        "sshpass": "*",
         "symfony/console": "2.*",
         "symfony/finder": "2.*",
         "klaussilveira/gitter": "0.2.*"
