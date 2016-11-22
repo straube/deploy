@@ -2,14 +2,18 @@
 
 namespace Straube\Deploy\Model;
 
-use mysqli;
+use PDO;
 
+/**
+ * Class LogQuery
+ * @package Straube\Deploy\Model
+ */
 class LogQuery
 {
 
     /**
      *
-     * @var \mysqli
+     * @var PDO
      */
     private static $connection;
 
@@ -23,14 +27,15 @@ class LogQuery
     public static function findLogs($project, $server, $limit = 10)
     {
         $logs = array();
-        $sql = "SELECT `config` AS `project`, `server`, `from`, `to`, `user`, `time` AS `date` FROM `deploy` WHERE `config` = ? AND `server` = ? ORDER BY `time` DESC LIMIT ?";
+        $sql = "SELECT `config` AS `project`, `server`, `from`, `to`, `user`, `time` AS `date` FROM `deploy` WHERE `config` = :project AND `server` = :server ORDER BY `time` DESC LIMIT :limit";
         $stmt = self::getConnection()->prepare($sql);
-        $stmt->bind_param('ssd', $project, $server, $limit);
-        if ($stmt->execute()) {
-            $result = $stmt->get_result();
-            while (null !== ($row = $result->fetch_array(MYSQLI_ASSOC))) {
-                $logs[] = new Log($row);
-            }
+        $stmt->bindParam(':project', $project, PDO::PARAM_STR);
+        $stmt->bindParam(':server', $server, PDO::PARAM_STR);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $logs[] = new Log($row);
         }
 
         return $logs;
@@ -43,36 +48,69 @@ class LogQuery
      */
     public static function addLog(Log $log)
     {
-        $sql = "INSERT INTO `deploy` (`config`, `server`, `from`, `to`, `user`, `time`) VALUES (?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO `deploy` (`config`, `server`, `from`, `to`, `user`, `time`) VALUES (:project, :server, :from, :to, :user, :date)";
         $stmt = self::getConnection()->prepare($sql);
+
         $project = $log->getProject();
         $server = $log->getServer();
         $from = $log->getFrom();
         $to = $log->getTo();
         $user = $log->getUser();
         $date = $log->getDate();
-        $stmt->bind_param('ssssss', $project, $server, $from, $to, $user, $date);
+        $stmt->bindParam(':project', $project, PDO::PARAM_STR);
+        $stmt->bindParam(':server', $server, PDO::PARAM_STR);
+        $stmt->bindParam(':from', $from, PDO::PARAM_STR);
+        $stmt->bindParam(':to', $to, PDO::PARAM_STR);
+        $stmt->bindParam(':user', $user, PDO::PARAM_STR);
+        $stmt->bindParam(':date', $date, PDO::PARAM_STR);
 
         return $stmt->execute();
     }
 
     /**
      *
-     * @return \mysqli
+     * @return \PDO
      * @throws \RuntimeException
      */
     private static function getConnection()
     {
         if (!isset(self::$connection)) {
-            $config = new Config();
-            $databaseConfig = $config->getDatabase();
-            if (empty($databaseConfig)) {
-                throw new \RuntimeException('Database configuration not found.');
+            self::connect();
+        } else {
+            try {
+                @self::$connection->prepare("SELECT 1")->execute();
+            } catch (\PDOException $e) {
+                $message = $e->getMessage();
+                if (preg_match("/gone away/i", $message)) {
+                    self::$connection = null;
+                    self::connect();
+                }
             }
-            self::$connection = new mysqli($databaseConfig['host'], $databaseConfig['user'], $databaseConfig['password'], $databaseConfig['name']);
         }
 
         return self::$connection;
     }
 
+
+    /**
+     * Connects to Database
+     */
+    private static function connect()
+    {
+        $config = new Config();
+        $databaseConfig = $config->getDatabase();
+        if (empty($databaseConfig)) {
+            throw new \RuntimeException('Database configuration not found.');
+        }
+
+        $dsn = sprintf(
+            "mysql:host=%s;dbname=%s",
+            $databaseConfig['host'],
+            $databaseConfig['name']
+        );
+
+        self::$connection = new PDO($dsn, $databaseConfig['user'], $databaseConfig['password'], [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]);
+    }
 }
