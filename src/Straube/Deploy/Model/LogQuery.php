@@ -4,6 +4,10 @@ namespace Straube\Deploy\Model;
 
 use PDO;
 
+/**
+ * Class LogQuery
+ * @package Straube\Deploy\Model
+ */
 class LogQuery
 {
 
@@ -22,7 +26,6 @@ class LogQuery
      */
     public static function findLogs($project, $server, $limit = 10)
     {
-
         $logs = array();
         $sql = "SELECT `config` AS `project`, `server`, `from`, `to`, `user`, `time` AS `date` FROM `deploy` WHERE `config` = :project AND `server` = :server ORDER BY `time` DESC LIMIT :limit";
         $stmt = self::getConnection()->prepare($sql);
@@ -45,10 +48,9 @@ class LogQuery
      */
     public static function addLog(Log $log)
     {
-
         $sql = "INSERT INTO `deploy` (`config`, `server`, `from`, `to`, `user`, `time`) VALUES (:project, :server, :from, :to, :user, :date)";
         $stmt = self::getConnection()->prepare($sql);
-        
+
         $project = $log->getProject();
         $server = $log->getServer();
         $from = $log->getFrom();
@@ -72,23 +74,43 @@ class LogQuery
      */
     private static function getConnection()
     {
-
         if (!isset(self::$connection)) {
-            $config = new Config();
-            $databaseConfig = $config->getDatabase();
-            if (empty($databaseConfig)) {
-                throw new \RuntimeException('Database configuration not found.');
+            self::connect();
+        } else {
+            try {
+                @self::$connection->prepare("SELECT 1")->execute();
+            } catch (\PDOException $e) {
+                $message = $e->getMessage();
+                if (preg_match("/gone away/i", $message)) {
+                    self::$connection = null;
+                    self::connect();
+                }
             }
-
-            $dsn = sprintf(
-                "mysql:host=%s;dbname=%s",
-                $databaseConfig['host'],
-                $databaseConfig['name']
-            );
-            self::$connection = new PDO($dsn, $databaseConfig['user'], $databaseConfig['password']);
         }
 
         return self::$connection;
     }
 
+
+    /**
+     * Connects to Database
+     */
+    private static function connect()
+    {
+        $config = new Config();
+        $databaseConfig = $config->getDatabase();
+        if (empty($databaseConfig)) {
+            throw new \RuntimeException('Database configuration not found.');
+        }
+
+        $dsn = sprintf(
+            "mysql:host=%s;dbname=%s",
+            $databaseConfig['host'],
+            $databaseConfig['name']
+        );
+
+        self::$connection = new PDO($dsn, $databaseConfig['user'], $databaseConfig['password'], [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]);
+    }
 }
